@@ -19,18 +19,42 @@ bgLoader.load('fondo.jpg', (texture) => {
 
 // deteccion movil 
 const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const mobileControls = document.getElementById('mobile-controls');
 
-// 3. controles moviles
+// controles moviles 
 if(isMobile()) {
     cameraOffset.set(0, 3, -1.5); // Ajuste cámara móvil
-    document.querySelectorAll('#mobile-controls button').forEach(btn => {
-        btn.addEventListener('touchstart', (e) => {
-            keys[`Arrow${e.target.id.split('-')[1].toUpperCase()}`] = true;
-            e.preventDefault();
-        });
-        btn.addEventListener('touchend', (e) => {
-            keys[`Arrow${e.target.id.split('-')[1].toUpperCase()}`] = false;
-        });
+    mobileControls.style.display = 'block'; 
+    
+    // Mapeo correcto de los IDs de botones a teclas
+    const buttonToKey = {
+        'm-up': 'ArrowUp',
+        'm-down': 'ArrowDown',
+        'm-left': 'ArrowLeft',
+        'm-right': 'ArrowRight'
+    };
+    
+    // Agregar eventos touch a cada botón
+    Object.keys(buttonToKey).forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            // Evento para cuando se presiona
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); 
+                keys[buttonToKey[btnId]] = true;
+            });
+            
+            // Evento para cuando se suelta
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[buttonToKey[btnId]] = false;
+            });
+            
+            // Evitar que el evento se propague fuera del botón
+            btn.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            });
+        }
     });
 }
 
@@ -175,13 +199,26 @@ function initializePoints() {
 
 // Controles 
 const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
-window.addEventListener('keydown', (e) => keys[e.code] = gameActive && keys.hasOwnProperty(e.code));
-window.addEventListener('keyup', (e) => keys[e.code] = false);
+window.addEventListener('keydown', (e) => {
+    if (gameActive && keys.hasOwnProperty(e.code)) {
+        keys[e.code] = true;
+    }
+});
+window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.code)) {
+        keys[e.code] = false;
+    }
+});
 
 // Movimiento 
 let isMoving = false, wasMoving = false;
 const clock = new THREE.Clock();
 let moveSpeed = 0.05, rotationSpeed = 0.02;
+
+//velocidad para móviles
+if (isMobile()) {
+    moveSpeed = 0.07;
+}
 
 function updateModelMovement() {
     if(!isModelLoaded || !gameActive) return;
@@ -259,7 +296,13 @@ function startTimer() {
 let runwayMusic = new Audio('musica.mp3');
 runwayMusic.loop = true;
 runwayMusic.volume = 0.5;
-document.body.addEventListener('touchstart', () => runwayMusic.play().catch(e => {}), { once: true });
+
+// reproducir audio en interacción móvil
+document.addEventListener('touchstart', () => {
+    if (runwayMusic && !runwayMusic.playing) {
+        runwayMusic.play().catch(e => console.log('Error reproduciendo audio: ', e));
+    }
+}, { once: true });
 
 // Game flow 
 function startGame() {
@@ -278,7 +321,7 @@ function startGame() {
     initializePoints();
     startTimer();
     runwayMusic.currentTime = 0;
-    runwayMusic.play();
+    runwayMusic.play().catch(e => console.log('Error reproduciendo audio: ', e));
 }
 
 function endGame() {
@@ -291,6 +334,11 @@ function endGame() {
 }
 
 startButton.addEventListener('click', startGame);
+
+startButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startGame();
+});
 
 // Animación
 function animate() {
@@ -315,6 +363,17 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+//  UI para dispositivos móviles
+if (isMobile()) {
+    uiContainer.style.top = '30%'; 
+    uiContainer.style.left = '50%'; 
+    
+    
+    if (window.innerHeight < 600) {
+        uiContainer.style.transform = 'scale(0.8) translate(-60%, -60%)';
+    }
+}
 
 // Iniciar
 animate();
