@@ -63,6 +63,20 @@
             background: rgba(255, 107, 0, 1);
             transform: scale(0.95);
         }
+
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -71,9 +85,16 @@
         <p>Flechas ←→: Rotar izquierda/derecha</p>
         <p>Flechas ↑↓: Mover adelante/atrás</p>
         <p>Espacio: Saltar</p>
-        <p>Objetivo: Recoger puntos (carne para el dinosaurio)</p>
+        <p>🥩 Carne normal: +1 punto</p>
+        <p>🟢 Carne buena: +8 segundos</p>
+        <p>🔴 Carne mala: -5 segundos</p>
     </div>
 
+    <div id="error-message" class="error-message">
+        <h3>Error cargando recursos</h3>
+        <p>Algunos archivos no se pudieron cargar. Verifica que todos los archivos estén en la carpeta correcta.</p>
+    </div>
+    
     <!-- Mobile Controls -->
     <div id="mobile-controls">
         <div class="mobile-control-pad">

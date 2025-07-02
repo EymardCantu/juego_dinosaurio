@@ -130,7 +130,7 @@ const scene = new THREE.Scene();
         const rock1Texture = textureLoader.load('roca1.jpg');
         const rock2Texture = textureLoader.load('roca2.png');
 
-        // AGREGADO: Texturas para los 3 tipos de carne
+        //Texturas para las carnes
         const meatTexture = textureLoader.load('carne.jpg');
         const badMeatTexture = textureLoader.load('carneP.png');
         const goodMeatTexture = textureLoader.load('carneB.png');
@@ -141,7 +141,7 @@ const scene = new THREE.Scene();
         // Crear relieve más pronunciado en el suelo
         const vertices = floorGeometry.attributes.position.array;
         for (let i = 0; i < vertices.length; i += 3) {
-            vertices[i + 2] = Math.random() * 1.2; // Altura aleatoria más pronunciada
+            vertices[i + 2] = Math.random() * 1.2; // Altura aleatoria
         }
         floorGeometry.attributes.position.needsUpdate = true;
         floorGeometry.computeVertexNormals();
@@ -155,7 +155,7 @@ const scene = new THREE.Scene();
         floor.position.y = -0.15;
         scene.add(floor);
 
-        // AGREGADO: Función para obtener altura del terreno
+        //Función para obtener altura del terreno mejorada
         function getTerrainHeight(x, z) {
             const terrainX = (x + 20) / 40 * 32;
             const terrainZ = (z + 20) / 40 * 32;
@@ -163,7 +163,7 @@ const scene = new THREE.Scene();
             const xi = Math.floor(terrainX);
             const zi = Math.floor(terrainZ);
             
-            if (xi < 0 || xi >= 31 || zi < 0 || zi >= 31) return 0;
+            if (xi < 0 || xi >= 31 || zi < 0 || zi >= 31) return -0.15;
             
             const getVertexHeight = (x, z) => {
                 const index = (z * 33 + x) * 3 + 2;
@@ -184,7 +184,7 @@ const scene = new THREE.Scene();
             return h0 * (1 - fz) + h1 * fz - 0.15;
         }
 
-        // MODIFICADO: Rocas decorativas con formas deformes
+        //Rocas decorativas
         const rocks = [];
         function createRocks() {
             const rockCount = 15;
@@ -220,11 +220,14 @@ const scene = new THREE.Scene();
                 const posZ = (Math.random() - 0.5) * 35;
                 const terrainHeight = getTerrainHeight(posX, posZ);
                 
-                rock.position.set(posX, terrainHeight + 0.2, posZ);
-                rock.rotation.y = Math.random() * Math.PI * 2;
-                
+                // Calcular el radio de la roca y ajustar posición
+                const rockRadius = rock.geometry.boundingSphere ? rock.geometry.boundingSphere.radius : 0.5;
                 const scale = Math.random() * 0.8 + 0.6;
                 rock.scale.set(scale, scale, scale);
+                
+                // Adherir completamente al suelo
+                rock.position.set(posX, terrainHeight + (rockRadius * scale * 0.3), posZ);
+                rock.rotation.y = Math.random() * Math.PI * 2;
                 
                 scene.add(rock);
                 rocks.push(rock);
@@ -272,7 +275,7 @@ const scene = new THREE.Scene();
             isModelLoaded = true;
         }, undefined, (err) => console.error("Error carga modelo:", err));
 
-        // MODIFICADO: Sistema de puntos con 3 tipos de carne
+        //Sistema de puntos mejorado con 3 tipos de carne y efectos de brillo
         const points = [], pointsToRemove = [], maxPoints = 50;
         const specialPoints = [], specialPointsToRemove = [];
         let lastSpecialSpawn = 0;
@@ -291,8 +294,10 @@ const scene = new THREE.Scene();
                     texture = badMeatTexture;
                     material = new THREE.MeshStandardMaterial({ 
                         map: texture,
-                        emissive: 0x330000,
-                        emissiveIntensity: 0.3
+                        emissive: 0xff0000,  // Brillo rojo más intenso
+                        emissiveIntensity: 0.20,  //Intensidad mayor
+                        transparent: true,
+                        opacity: 0.9
                     });
                     isSpecial = true;
                     break;
@@ -300,8 +305,10 @@ const scene = new THREE.Scene();
                     texture = goodMeatTexture;
                     material = new THREE.MeshStandardMaterial({ 
                         map: texture,
-                        emissive: 0x003300,
-                        emissiveIntensity: 0.3
+                        emissive: 0x00ff00,  // Brillo verde más intenso
+                        emissiveIntensity: 0.20,  // Intensidad mayor
+                        transparent: true,
+                        opacity: 0.9
                     });
                     isSpecial = true;
                     break;
@@ -319,12 +326,14 @@ const scene = new THREE.Scene();
             const posZ = (Math.random() - 0.5) * 36;
             const terrainHeight = getTerrainHeight(posX, posZ);
             
+            //Adherir completamente al suelo
             point.position.set(posX, terrainHeight + 0.05, posZ);
             point.userData = { type: type, isSpecial: isSpecial };
             
             if (isSpecial) {
                 point.userData.spawnTime = Date.now();
                 point.userData.lifetime = 8000 + Math.random() * 7000;
+                point.userData.originalEmissiveIntensity = material.emissiveIntensity;
                 specialPoints.push(point);
             } else {
                 points.push(point);
@@ -341,12 +350,13 @@ const scene = new THREE.Scene();
             for(let i = 0; i < maxPoints; i++) createPoint();
         }
 
-        // AGREGADO: Actualizar puntos especiales
+        // Puntos especiales con efectos de brillo pulsante
         function updateSpecialPoints() {
             const currentTime = Date.now();
             
-            if (currentTime - lastSpecialSpawn > 5000 + Math.random() * 10000) {
-                if (Math.random() < 0.7) {
+            //Spawn de carnes especiales
+            if (currentTime - lastSpecialSpawn > 3000 + Math.random() * 5000) {
+                if (Math.random() < 0.6) { // Probabilidad de spawn
                     const type = Math.random() < 0.5 ? MEAT_TYPES.BAD : MEAT_TYPES.GOOD;
                     createPoint(type);
                     lastSpecialSpawn = currentTime;
@@ -354,12 +364,19 @@ const scene = new THREE.Scene();
             }
             
             specialPoints.forEach(point => {
+                // Efecto de brillo pulsante
+                const pulseSpeed = 0.010;
+                const pulseIntensity = Math.sin(currentTime * pulseSpeed) * 0.3 + 0.7;
+                point.material.emissiveIntensity = point.userData.originalEmissiveIntensity * pulseIntensity;
+                
                 if (currentTime - point.userData.spawnTime > point.userData.lifetime) {
                     specialPointsToRemove.push(point);
                 } else {
                     const timeLeft = point.userData.lifetime - (currentTime - point.userData.spawnTime);
                     if (timeLeft < 3000) {
-                        const opacity = Math.sin(currentTime * 0.01) * 0.5 + 0.5;
+                        // Parpadeo más visible cuando está por desaparecer
+                        const blinkSpeed = 0.02;
+                        const opacity = Math.sin(currentTime * blinkSpeed) * 0.4 + 0.6;
                         point.material.opacity = opacity;
                         point.material.transparent = true;
                     }
@@ -396,7 +413,7 @@ const scene = new THREE.Scene();
             moveSpeed = 0.07;
         }
 
-        // MODIFICADO: Movimiento del modelo para seguir el terreno
+        //Movimiento del modelo para seguir el terreno
         function updateModelMovement() {
             if(!isModelLoaded || !gameActive) return;
 
@@ -467,7 +484,7 @@ const scene = new THREE.Scene();
             checkPointCollisions();
         }
 
-        // MODIFICADO: Detección de colisiones con efectos de tiempo
+        //Detección de colisiones con efectos de tiempo
         function checkPointCollisions() {
             if(!isModelLoaded || !gameActive) return;
 
@@ -557,16 +574,16 @@ const scene = new THREE.Scene();
             score = 0;
             meteoriteLightIntensity = 0.2;
             directionalLight.intensity = meteoriteLightIntensity;
-            lastSpecialSpawn = Date.now(); // AGREGADO
+            lastSpecialSpawn = Date.now(); 
             
             timerDisplay.textContent = `Tiempo: ${gameTime}s`;
-            timerDisplay.style.color = 'white'; // AGREGADO
+            timerDisplay.style.color = 'white'; 
             scoreDisplay.textContent = `Carne: ${score}`;
             gameOverMessage.style.display = 'none';
             startButton.style.display = 'none';
             
             if(isModelLoaded) {
-                model.position.set(0, getTerrainHeight(0, 0), 0); // MODIFICADO
+                model.position.set(0, getTerrainHeight(0, 0), 0);
                 jumpHeight = 0;
                 isJumping = false;
                 jumpVelocity = 0;
@@ -593,7 +610,7 @@ const scene = new THREE.Scene();
             startGame();
         });
 
-        // MODIFICADO: Animación con actualización de puntos especiales
+        //Animación con actualización de puntos especiales
         function animate() {
             requestAnimationFrame(animate);
             
@@ -601,7 +618,7 @@ const scene = new THREE.Scene();
             updateModelMovement();
             
             if(gameActive) {
-                updateSpecialPoints(); // AGREGADO
+                updateSpecialPoints(); 
                 
                 if(gameTime < 15 && isModelLoaded) {
                     const shake = 0.05 * (1 - gameTime / 15);
