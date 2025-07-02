@@ -1,9 +1,9 @@
-<!DOCTYPE html>Add commentMore actions
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego 3D con Modelo GLB</title>
+    <title>Escapa del Meteorito</title>
     <style>
         body { 
             margin: 0; 
@@ -20,17 +20,73 @@
             border-radius: 5px;
             z-index: 100;
         }
+        
+        /* Mobile Controls */
+        #mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .mobile-control-pad {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .mobile-btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 107, 0, 0.8);
+            border: 2px solid #ff6b00;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        #m-up { top: 0; left: 50px; }
+        #m-down { bottom: 0; left: 50px; }
+        #m-left { top: 50px; left: 0; }
+        #m-right { top: 50px; right: 0; }
+        #m-jump { top: 25px; left: 25px; width: 50px; height: 50px; background: rgba(0, 255, 0, 0.8); border-color: #00ff00; }
+        
+        .mobile-btn:active {
+            background: rgba(255, 107, 0, 1);
+            transform: scale(0.95);
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
     <div class="instructions">
         <h3>Controles:</h3>
         <p>Flechas ←→: Rotar izquierda/derecha</p>
         <p>Flechas ↑↓: Mover adelante/atrás</p>
+        <p>Espacio: Saltar</p>
         <p>Objetivo: Recoger puntos (carne para el dinosaurio)</p>
     </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div class="mobile-control-pad">
+            <button id="m-up" class="mobile-btn">↑</button>
+            <button id="m-down" class="mobile-btn">↓</button>
+            <button id="m-left" class="mobile-btn">←</button>
+            <button id="m-right" class="mobile-btn">→</button>
+            <button id="m-jump" class="mobile-btn">⬆</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script src="main.js"></script>
 </body>
