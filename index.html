@@ -1,11 +1,28 @@
-<!DOCTYPE html>
+<!DOCTYPE html>Add commentMore actions
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego 3D con Modelo GLB</title>
-    <link rel="stylesheet" href="css/miestilo.css">
-    <script type="module" src="/main.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+        }
+        .instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
     <div class="instructions">
@@ -15,14 +32,6 @@
         <p>Objetivo: Recoger puntos (carne para el dinosaurio)</p>
     </div>
 
-    <div id="mobile-controls">
-        <button id="m-up">↑</button>
-        <div>
-            <button id="m-left">←</button>
-            <button id="m-right">→</button>
-        </div>
-        <button id="m-down">↓</button>
-    </div>
-
+    <script src="main.js"></script>
 </body>
 </html>
